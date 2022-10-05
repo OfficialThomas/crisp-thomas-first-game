@@ -67,7 +67,7 @@ function update() {
       });
     }
 
-    player = { pos: vec(40, 98), vx: 1, ty: 90 };
+    player = { pos: vec(G.WIDTH/2, 98), vx: 1, ty: 90 };
   }
 
   // Update for Star
