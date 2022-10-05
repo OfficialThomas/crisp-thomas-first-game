@@ -1,12 +1,17 @@
-title = "Snowy Day";
+title = "SNOWY DAY";
 
 description = `
-AVOID 
-HYPOTHERMIA
+Avoid Snow
 
 [Hold] 
 Pause Snow
 `;
+
+/*
+referenced code from 
+https://abagames.github.io/crisp-game-lib-games/?liftup
+https://github.com/JunoNgx/crisp-game-lib-tutorial#step-01-basic-drawing-and-update-stars
+*/
 
 characters = [
   `
@@ -60,6 +65,7 @@ function update() {
   //startup function
   if (!ticks) {
     //star setup
+    stars = [];
     for (let i = 0; i < 2; i++) {
       stars.push({
           pos: vec(rnd(0, G.WIDTH), 0),
@@ -67,33 +73,42 @@ function update() {
       });
     }
 
-    player = { pos: vec(G.WIDTH/2, 98), vx: 1, ty: 90 };
+    player = { pos: vec(G.WIDTH/2, 97), vx: 0.25, ty: 90 };
   }
+
+  player.pos.x += player.vx
+  if (player.pos.x < 5 || player.pos.x > G.WIDTH - 5) {
+    player.vx *= -1;
+  }
+  color("red")
+  const c = char(addWithCharCode("a", floor(ticks / 15) % 2), player.pos, {
+    mirror: { x: player.vx < 0 ? -1 : 1 },
+  }).isColliding;
 
   // Update for Star
   stars.forEach((s) => {
     // Move the star downwards
     s.pos.y += s.speed;
     // Bring the star back to top once it's past the bottom of the screen
-    s.pos.wrap(0, G.WIDTH, 0, G.HEIGHT);
-    if (s.pos.y < G.HEIGHT && s.pos.y > 15 * G.HEIGHT/16) {
+    if (s.pos.y > 2 * G.HEIGHT/3) {
       s.pos.x = rnd(1, G.WIDTH - 1);
+      s.pos.y = 0;
     }
 
     // Choose a color to draw
     color("light_black");
-    // Draw the star as a square of size 1
-    box(s.pos, 2);
+    rect(s.pos.x, s.pos.y, 3, 3);
+
+    if (s.pos.y >= player.pos.y - 3.25 && s.pos.y <= player.pos.y + 3.25) {
+      if (s.pos.x >= player.pos.x - 3.25 && s.pos.x <= player.pos.x + 3.25) {
+        end();
+      }
+      
+    }
+
   });
 
-  startick += 1;
-  if (startick > 120) {
-    stars.push({
-      pos: vec(rnd(0, G.WIDTH), 0),
-      speed: rnd(G.STAR_SPEED_MIN, G.STAR_SPEED_MAX)
-    });
-    startick = 0;
-  }
+  
   
   if (input.isPressed) {
     stars.forEach((s) => {
@@ -101,6 +116,15 @@ function update() {
     });
   }
   else {
+    startick += 1;
+    if (startick > 120) {
+      stars.push({
+      pos: vec(rnd(0, G.WIDTH), 0),
+      speed: rnd(G.STAR_SPEED_MIN, G.STAR_SPEED_MAX)
+      });
+      startick = 0;
+      addScore(1, player.pos);
+    }
     stars.forEach((s) => {
       s.speed = rnd(G.STAR_SPEED_MIN, G.STAR_SPEED_MAX);
     });
@@ -108,11 +132,6 @@ function update() {
 
   color("light_black");
   rect(0, 100, G.WIDTH, 200);
-
-  color("red")
-  const c = char(addWithCharCode("a", floor(ticks / 15) % 2), player.pos, {
-    mirror: { x: player.vx < 0 ? -1 : 1 },
-  }).isColliding;
 }
 
 addEventListener("load", onLoad);
